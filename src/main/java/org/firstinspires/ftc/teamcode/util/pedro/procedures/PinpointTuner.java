@@ -7,7 +7,6 @@ import com.pedropathing.tuning.autotune.Inputs;
 import com.pedropathing.tuning.autotune.Procedure;
 import com.pedropathing.tuning.autotune.TuningOpMode;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
-
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 import java.util.List;
@@ -86,7 +85,7 @@ class PinpointCustomPodScalar extends TuningOpMode<Double> {
     }
 
     @Override
-    protected Double runTuningOpMode() throws InterruptedException {
+    protected Double runTuningOpMode() {
         PinpointConfig config = new PinpointConfig(c -> {
             c.name.set(name);
             c.ticksPerUnit.set(OptionalDouble.of(1.0));
@@ -97,10 +96,7 @@ class PinpointCustomPodScalar extends TuningOpMode<Double> {
         });
         PinpointLocalizer localizer = new PinpointLocalizer(hardwareMap, config);
         localizer.setPose(new Pose(0, 0));
-        Thread.sleep(1000);
         waitForStart();
-        localizer.setPose(Pose.zero());
-        localizer.update();
         while (!isStopRequested()) {
             localizer.update();
         }
@@ -124,7 +120,7 @@ class PinpointForwardDirection extends TuningOpMode<Boolean> {
     }
 
     @Override
-    protected Boolean runTuningOpMode() throws InterruptedException {
+    protected Boolean runTuningOpMode() {
         PinpointConfig config = new PinpointConfig(c -> {
             c.name.set(name);
             c.xPodDirection.set(GoBildaPinpointDriver.EncoderDirection.FORWARD);
@@ -140,22 +136,13 @@ class PinpointForwardDirection extends TuningOpMode<Boolean> {
         });
         PinpointLocalizer localizer = new PinpointLocalizer(hardwareMap, config);
         localizer.setPose(new Pose(0, 0));
-        Thread.sleep(1000);
         waitForStart();
-        localizer.setPose(Pose.zero());
-        localizer.update();
 
-        // Keep the last reading taken before Stop. After Stop the Pinpoint reports a reset
-        // pose (x = 0), so reading it afterwards always returns false (not reversed).
-        double x = 0;
         while (!isStopRequested()) {
             localizer.update();
-            if (!isStopRequested()) {
-                x = localizer.pose().x();
-            }
         }
 
-        return x < 0;
+        return localizer.pose().x() < 0;
     }
 }
 
@@ -175,7 +162,7 @@ class PinpointStrafeDirection extends TuningOpMode<Boolean> {
     }
 
     @Override
-    protected Boolean runTuningOpMode() throws InterruptedException {
+    protected Boolean runTuningOpMode() {
         PinpointConfig config = new PinpointConfig(c -> {
             c.name.set(name);
             c.xPodDirection.set(GoBildaPinpointDriver.EncoderDirection.FORWARD);
@@ -191,21 +178,12 @@ class PinpointStrafeDirection extends TuningOpMode<Boolean> {
         });
         PinpointLocalizer localizer = new PinpointLocalizer(hardwareMap, config);
         localizer.setPose(new Pose(0, 0));
-        Thread.sleep(1000);
         waitForStart();
-        localizer.setPose(Pose.zero());
-        localizer.update();
-        // Keep the last reading taken before Stop. After Stop the Pinpoint reports a reset
-        // pose (y = 0), so reading it afterwards always returns false (not reversed).
-        double y = 0;
         while (!isStopRequested()) {
             localizer.update();
-            if (!isStopRequested()) {
-                y = localizer.pose().y();
-            }
         }
 
-        return y < 0;
+        return localizer.pose().y() < 0;
     }
 }
 
@@ -217,9 +195,9 @@ class PinpointOffsets extends TuningOpMode<List<Double>> {
     private Pose previous = Pose.zero();
 
     public PinpointOffsets(String name, PinpointTuner.PodType podType, OptionalDouble customPodScalar, Boolean forwardPodReversed, Boolean strafePodReversed) {
-        super("Offsets Identification",
+        super("PinpointOffsets Identification",
                 "Automatically identifies the offsets for your Pinpoint localizer. \n"
-                        + "Spin your robot in place 180 degrees counterclockwise and then stop the Opmode",
+                        + "Spin your robot in place 180 degrees and then stop the Opmode",
                 true);
         this.name = name;
         this.podType = podType;
@@ -231,15 +209,13 @@ class PinpointOffsets extends TuningOpMode<List<Double>> {
     }
 
     @Override
-    protected List<Double> runTuningOpMode() throws InterruptedException {
+    protected List<Double> runTuningOpMode() {
         PinpointConfig config = new PinpointConfig(c -> {
             c.name.set(name);
             c.xPodDirection.set(forwardPodReversed ? GoBildaPinpointDriver.EncoderDirection.REVERSED : GoBildaPinpointDriver.EncoderDirection.FORWARD);
             c.yPodDirection.set(strafePodReversed ? GoBildaPinpointDriver.EncoderDirection.REVERSED : GoBildaPinpointDriver.EncoderDirection.FORWARD);
             if (customPodScalar.isPresent()) {
-                c.encoderResolutionUnit.set(DistanceUnit.INCH);
                 c.ticksPerUnit.set(OptionalDouble.of(customPodScalar.getAsDouble()));
-                c.resetMode.set(PinpointLocalizer.ResetMode.RESET_AND_RECALIBRATE_IMU);
             } else {
                 c.podType.set(podType == PinpointTuner.PodType.SWING_ARM ? GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_SWINGARM_POD : GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
             }
@@ -249,17 +225,10 @@ class PinpointOffsets extends TuningOpMode<List<Double>> {
             c.offsetUnits.set(DistanceUnit.INCH);
         });
         PinpointLocalizer localizer = new PinpointLocalizer(hardwareMap, config);
-        if (customPodScalar.isPresent()) {
-            localizer.reset();
-        }
-        localizer.setPose(Pose.zero());
+        localizer.setPose(new Pose(0, 0));
         localizer.update();
 
-
-        Thread.sleep(1000);
         waitForStart();
-        localizer.setPose(Pose.zero());
-        localizer.update();
 
         localizer.setPose(Pose.zero());
 
@@ -267,7 +236,6 @@ class PinpointOffsets extends TuningOpMode<List<Double>> {
             previous = localizer.pose();
             localizer.update();
 
-            telemetry.addData("heading", localizer.pose().heading());
             telemetry.addData("pose", localizer.pose());
             telemetry.addData("previous", previous);
             telemetry.update();

@@ -1,57 +1,38 @@
 package org.firstinspires.ftc.teamcode.util.subsystems
 
 import com.acmerobotics.dashboard.config.Config
-import com.pedropathing.follower.Follower
-import com.pedropathing.math.Pose
+import dev.nextftc.hardware.actuators.NextMotor
 import dev.nextftc.hardware.actuators.NextServo
 import dev.nextftc.robot.*
-import kotlin.math.atan2
 
 @Config
 class Turret : Mechanism {
-    private val turretLeft = NextServo("turretLeft")
-    private val turretRight = NextServo("turretRight")
+    private val left = NextServo("turretLeft")
+    private val right = NextServo("turretRight").apply {
+        direction = NextMotor.Direction.REVERSE
+    }
 
-    val gearRatio = 145.0 / 32.0
+    val bluePosition = 0.5
+    val redPosition = 0.5
+
+    val center = instant { position = 0.5 }
+
+    val aimBlue = instant { position = bluePosition }
+    val aimRed = instant { position = redPosition }
+
+    val increment = instant { position += 0.05 }
+    val decrement = instant { position -= 0.05 }
+
+    override fun periodic() {
+        left.position = position
+        right.position = position
+
+        Telemetry.log("turret/leftPosition", left.position)
+        Telemetry.log("turret/rightPosition", right.position)
+    }
 
     companion object {
         @JvmField
-        var targetAngle = 0.0
-
-        @JvmField
-        var minAngle = -90.0
-
-        @JvmField
-        var maxAngle = 90.0
-
-    }
-
-
-    private fun angleToPosition(angle: Double): Double {
-        val servoAngle = angle * gearRatio
-
-        return (0.5 + servoAngle / 350.0).coerceIn(0.0, 1.0)
-    }
-
-    fun setAngle(angle: Double) {
-        targetAngle = angle.coerceIn(minAngle..maxAngle)
-    }
-
-    fun face(currentPose: Pose, targetPose: Pose) {
-        val targetHeading = atan2(
-            targetPose.y() - currentPose.y(),
-            targetPose.x() - currentPose.x()
-        )
-
-        setAngle(
-            Math.toDegrees(targetHeading) - Math.toDegrees(currentPose.heading())
-        )
-    }
-
-    override fun periodic() {
-        val position = angleToPosition(targetAngle)
-
-        turretLeft.position = position
-        turretRight.position = 1.0 - position
+        var position = 0.5
     }
 }

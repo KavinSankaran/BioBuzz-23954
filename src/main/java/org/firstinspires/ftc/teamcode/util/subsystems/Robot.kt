@@ -16,7 +16,7 @@ class Robot : NextRobot {
     val scooper = Scooper()
     val flywheel = Flywheel()
     val hood = Hood()
-    //val turret = Turret()
+    val turret = Turret()
 
     val pedro = PedroMechanism(Constants::create)
 
@@ -32,16 +32,15 @@ class Robot : NextRobot {
         blocker.close
     )
 
-    /*override fun periodic() {
-        pedro.follower.update()
-
-        val currentPose = pedro.follower.pose()
-        val hivePose = if (currentPose.x() < 70.75) currentAlliance.hive1Pose
-        else currentAlliance.hive2Pose
-
-
-    }*/
-
     override val mechanisms: Set<Mechanism>
-        get() = setOf(drivetrain, intake, flywheel, blocker, scooper, hood, pedro)
+        get() = setOf(
+            drivetrain,
+            intake,
+            flywheel,
+            blocker,
+            scooper,
+            hood,
+            turret,
+            pedro
+        )
 }

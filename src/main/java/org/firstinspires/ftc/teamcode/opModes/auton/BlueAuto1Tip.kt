@@ -5,13 +5,13 @@ import com.pedropathing.api.PoseFactory
 import com.pedropathing.ivy.Scheduler.schedule
 import com.pedropathing.ivy.groups.Groups.sequential
 import com.pedropathing.ivy.pedro.PedroCommands.follow
-import com.pedropathing.math.Pose
+import dev.nextftc.robot.opmode.BulkReadHook
 import dev.nextftc.robot.opmode.NextAutonomous
-import org.firstinspires.ftc.teamcode.util.BaseOpMode
+import dev.nextftc.robot.opmode.NextOpMode
 import org.firstinspires.ftc.teamcode.util.subsystems.Robot
 
 @NextAutonomous("BlueAuto1Tip")
-class BlueAuto1Tip(private val robot: Robot) : BaseOpMode(robot) {
+class BlueAuto1Tip(private val robot: Robot) : NextOpMode(robot, BulkReadHook) {
     private val poseFactory = PoseFactory.degrees()
 
     private val start = poseFactory.of(84.2343, 132.9226, 270.0)
@@ -19,10 +19,6 @@ class BlueAuto1Tip(private val robot: Robot) : BaseOpMode(robot) {
 
     init {
         robot.setStart(start)
-    }
-
-    companion object {
-        lateinit var endPose: Pose
     }
 
     fun cycle1() = line(start, cycle1).linear(start, cycle1)
@@ -36,9 +32,5 @@ class BlueAuto1Tip(private val robot: Robot) : BaseOpMode(robot) {
                 robot.shoot
             )
         )
-    }
-
-    override fun end() {
-        endPose = robot.pedro.follower.pose()
     }
 }

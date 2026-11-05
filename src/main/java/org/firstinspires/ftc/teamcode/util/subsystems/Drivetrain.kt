@@ -16,10 +16,11 @@ class Drivetrain : Mechanism {
         direction = NextMotor.Direction.REVERSE
         zeroPowerBehavior = NextMotor.ZeroPowerBehavior.BRAKE
     }
-    private val motors = listOf(lf, lb, rf, rb)
 
+    val motors = listOf(lf, rf, lb, rb)
 
-    fun tank(gamepad: Gamepad) = tankDrive(lf, rf, lb, rb, gamepad)
+    fun tank(gamepad: Gamepad) = tankDrive(motors[0], motors[1], motors[2], motors[3], gamepad)
+
     val strafeLeft = setDtPowers(-1.0, 1.0, 1.0, -1.0)
     val strafeRight = setDtPowers(1.0, -1.0, -1.0, 1.0)
     val forward = setDtPowers(1.0, 1.0, 1.0, 1.0)
@@ -33,4 +34,5 @@ class Drivetrain : Mechanism {
     }.setEnd { stop() }.requiring(this)
 
     fun stop() = motors.forEach { it.throttle = 0.0 }
+
 }

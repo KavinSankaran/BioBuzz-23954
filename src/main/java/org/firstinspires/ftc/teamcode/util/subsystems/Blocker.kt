@@ -13,7 +13,7 @@ class Blocker : Mechanism {
 
     val open = instant { blocker.position = 0.63 }
     val close = instant { blocker.position = 0.75 }
-    val toggle = conditional({ blocker.position == 1.0 }, close, open)
+    val toggle = conditional({ blocker.position == 0.63 }, close, open)
 
     override fun periodic() {
         Telemetry.log("blocker/position", blocker.position)
